@@ -6,37 +6,36 @@ const VERSION = '1.0';
 export const spec = {
   code: BIDDER_CODE,
   isBidRequestValid: function isBidRequestValid(bid) {
-    return !!(bid && bid.params && bid.params.invid);
+    return !!(bid && bid.params);
   },
   buildRequests: function buildRequests(validBidRequests, bidderRequest) {
     if (!validBidRequests || !bidderRequest) {
       return;
     }
-    let adSlots = validBidRequests.map(function (bid) {
+    return validBidRequests.map(function (bidderRequest) {
+      let data = {
+        v: VERSION,
+        requestId: bidderRequest.bidderRequestId,
+        adSlots: [{
+          bidId: bidderRequest.bidId,
+          invId: bidderRequest.params.invid,
+          zoneId: bidderRequest.params.zoneid,
+          floor: bidderRequest.params.floor,
+          sizes: bidderRequest.sizes || [],
+          schain: bidderRequest.schain || {}
+        }],
+        referer: bidderRequest.refererInfo && bidderRequest.refererInfo.referer,
+        tmax: bidderRequest.timeout,
+        gdpr: bidderRequest.gdprConsent && bidderRequest.gdprConsent.gdprApplies ? 1 : 0,
+        consent: bidderRequest.gdprConsent && bidderRequest.gdprConsent.consentString,
+        uspConsent: bidderRequest.uspConsent
+      };
       return {
-        bidId: bid.bidId,
-        invId: bid.params.invid,
-        zoneId: bid.params.zoneid,
-        floor: bid.params.floor,
-        sizes: bid.sizes || [],
-        schain: bid.schain || {}
+        method: 'POST',
+        url: END_POINT,
+        data: JSON.stringify(data)
       };
     });
-    let data = {
-      v: VERSION,
-      requestId: bidderRequest.bidderRequestId,
-      adSlots: adSlots,
-      referer: bidderRequest.refererInfo && bidderRequest.refererInfo.referer,
-      tmax: bidderRequest.timeout,
-      gdpr: bidderRequest.gdprConsent && bidderRequest.gdprConsent.gdprApplies ? 1 : 0,
-      consent: bidderRequest.gdprConsent && bidderRequest.gdprConsent.consentString,
-      uspConsent: bidderRequest.uspConsent
-    };
-    return {
-      method: 'POST',
-      url: END_POINT,
-      data: JSON.stringify(data)
-    };
   },
   interpretResponse: function interpretResponse(serverResponse, request) {
     if (!serverResponse || !serverResponse.body || !serverResponse.body.seatbid) {
