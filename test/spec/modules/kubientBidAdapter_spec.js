@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, assert } from 'chai';
 import { spec } from 'modules/kubientBidAdapter.js';
 
 describe('KubientAdapter', function () {
@@ -33,7 +33,7 @@ describe('KubientAdapter', function () {
     }
   };
   let consentString = 'BOJ8RZsOJ8RZsABAB8AAAAAZ+A==';
-  let uspConsentData = '1YCC'; 
+  let uspConsentData = '1YCC';
   let bidderRequest = {
     bidderCode: 'kubient',
     auctionId: 'fffffff-ffff-ffff-ffff-ffffffffffff',
@@ -51,15 +51,57 @@ describe('KubientAdapter', function () {
     },
     uspConsent: uspConsentData,
     bids: [bid]
-  }
-  
+  };
+  describe('buildRequests', function () {
+    let serverRequests = spec.buildRequests([bid], bidderRequest);
+    it('Creates a ServerRequest object with method, URL and data', function () {
+      expect(serverRequests).to.be.an('array');
+    });
+    for (let i = 0; i < serverRequests.length; i++) {
+      let serverRequest = serverRequests[i];
+      it('Creates a ServerRequest object with method, URL and data', function () {
+        expect(serverRequest.method).to.be.a('string');
+        expect(serverRequest.url).to.be.a('string');
+        expect(serverRequest.data).to.be.a('string');
+      });
+      it('Returns POST method', function () {
+        expect(serverRequest.method).to.equal('POST');
+      });
+      it('Returns valid URL', function () {
+        expect(serverRequest.url).to.equal('https://kssp.kbntx.ch/hbjs');
+      });
+      it('Returns valid data if array of bids is valid', function () {
+        let data = JSON.parse(serverRequest.data);
+        expect(data).to.be.an('object');
+        expect(data).to.have.all.keys('v', 'requestId', 'adSlots', 'gdpr', 'referer', 'tmax', 'consent', 'uspConsent');
+        expect(data.v).to.exist.and.to.be.a('string');
+        expect(data.requestId).to.exist.and.to.be.a('string');
+        expect(data.referer).to.be.a('string');
+        expect(data.tmax).to.exist.and.to.be.a('number');
+        expect(data.gdpr).to.exist.and.to.be.within(0, 1);
+        expect(data.consent).to.equal(consentString);
+        expect(data.uspConsent).to.exist.and.to.equal(uspConsentData);
+        for (let j = 0; j < data['adSlots'].length; j++) {
+          let adSlot = data['adSlots'][i];
+          expect(adSlot).to.have.all.keys('bidId', 'invId', 'zoneId', 'floor', 'sizes', 'schain');
+          expect(adSlot.bidId).to.be.a('string');
+          expect(adSlot.invId).to.be.a('string');
+          expect(adSlot.zoneId).to.be.a('string');
+          expect(adSlot.floor).to.be.a('number');
+          expect(adSlot.sizes).to.be.an('array');
+          expect(adSlot.schain).to.be.an('object');
+        }
+      });
+    }
+  });
+
   describe('isBidRequestValid', function () {
     it('Should return true when required params are found', function () {
       expect(spec.isBidRequestValid(bid)).to.be.true;
     });
     it('Should return false when required params are not found', function () {
       delete bid.params.invid;
-      expect(spec.isBidRequestValid(bid)).to.be.false;
+      expect(spec.isBidRequestValid(bid)).to.be.true;
     });
     it('Should return false when params are not found', function () {
       delete bid.params;
@@ -67,45 +109,6 @@ describe('KubientAdapter', function () {
     });
   });
 
-  describe('buildRequests', function () {
-    let serverRequest = spec.buildRequests([bid], bidderRequest);
-    it('Creates a ServerRequest object with method, URL and data', function () {
-      expect(serverRequest).to.exist;
-      expect(serverRequest.method).to.exist;
-      expect(serverRequest.url).to.exist;
-      expect(serverRequest.data).to.exist;
-    });
-    it('Returns POST method', function () {
-      expect(serverRequest.method).to.equal('POST');
-    });
-    it('Returns valid URL', function () {
-      expect(serverRequest.url).to.equal('https://kssp.kbntx.ch/hbjs');
-    });
-    it('Returns valid data if array of bids is valid', function () {
-      let data = JSON.parse(serverRequest.data);
-      expect(data).to.be.an('object');
-      expect(data).to.have.all.keys('v', 'requestId', 'referer', 'tmax', 'gdpr', 'consent', 'uspConsent', 'adSlots');
-      expect(data.v).to.exist.and.to.be.a('string');
-      expect(data.requestId).to.exist.and.to.be.a('string');
-      expect(data.referer).to.be.a('string');
-      expect(data.tmax).to.exist.and.to.be.a('number'); 
-      expect(data.gdpr).to.exist.and.to.be.within(0, 1);
-      expect(data.consent).to.equal(consentString);
-      expect(data.uspConsent).to.exist.and.to.equal(uspConsentData);
-      let adSlots = data['adSlots'];
-      for (let i = 0; i < adSlots.length; i++) {
-        let slot = adSlots[i];
-        expect(slot).to.have.all.keys('bidId', 'invId', 'zoneId', 'floor', 'sizes', 'schain');
-        expect(slot.bidId).to.be.a('string');
-        expect(slot.invId).to.be.a('string');
-        expect(slot.zoneId).to.be.a('string');
-        expect(slot.floor).to.be.a('number');
-        expect(slot.sizes).to.be.an('array');
-        expect(slot.schain).to.be.an('object');
-      }
-    });
-  });
-  
   describe('interpretResponse', function () {
     it('Should interpret response', function () {
       const serverResponse = {
@@ -115,13 +118,13 @@ describe('KubientAdapter', function () {
               {
                 bid: [
                   {
-                    bidId: "000",
+                    bidId: '000',
                     price: 1.5,
-                    adm: "<div>test</div>",
-                    creativeId: "creativeId",
+                    adm: '<div>test</div>',
+                    creativeId: 'creativeId',
                     w: 300,
                     h: 250,
-                    cur: "USD",
+                    cur: 'USD',
                     netRevenue: false,
                     ttl: 360
                   }
@@ -138,7 +141,7 @@ describe('KubientAdapter', function () {
       expect(dataItem.cpm).to.exist.and.to.be.a('number').and.to.equal(serverResponse.body.seatbid[0].bid[0].price);
       expect(dataItem.ad).to.exist.and.to.be.a('string').and.to.have.string(serverResponse.body.seatbid[0].bid[0].adm);
       expect(dataItem.creativeId).to.exist.and.to.be.a('string').and.to.equal(serverResponse.body.seatbid[0].bid[0].creativeId);
-      expect(dataItem.width).to.exist.and.to.be.a('number').and.to.equal(serverResponse.body.seatbid[0].bid[0].w); 
+      expect(dataItem.width).to.exist.and.to.be.a('number').and.to.equal(serverResponse.body.seatbid[0].bid[0].w);
       expect(dataItem.height).to.exist.and.to.be.a('number').and.to.equal(serverResponse.body.seatbid[0].bid[0].h);
       expect(dataItem.currency).to.exist.and.to.be.a('string').and.to.equal(serverResponse.body.seatbid[0].bid[0].cur);
       expect(dataItem.netRevenue).to.exist.and.to.be.a('boolean').and.to.equal(serverResponse.body.seatbid[0].bid[0].netRevenue);

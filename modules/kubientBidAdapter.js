@@ -5,29 +5,29 @@ const END_POINT = 'https://kssp.kbntx.ch/hbjs';
 const VERSION = '1.0';
 export const spec = {
   code: BIDDER_CODE,
-  isBidRequestValid: function isBidRequestValid(bid) {
+  isBidRequestValid: function (bid) {
     return !!(bid && bid.params);
   },
-  buildRequests: function buildRequests(validBidRequests, bidderRequest) {
+  buildRequests: function (validBidRequests, bidderRequest) {
     if (!validBidRequests || !bidderRequest) {
       return;
     }
-    return validBidRequests.map(function (bidderRequest) {
+    return validBidRequests.map(function (bid) {
       let data = {
         v: VERSION,
-        requestId: bidderRequest.bidderRequestId,
+        requestId: bid.bidderRequestId,
         adSlots: [{
-          bidId: bidderRequest.bidId,
-          invId: bidderRequest.params.invid,
-          zoneId: bidderRequest.params.zoneid,
-          floor: bidderRequest.params.floor,
-          sizes: bidderRequest.sizes || [],
-          schain: bidderRequest.schain || {}
+          bidId: bid.bidId,
+          invId: bid.params.invid,
+          zoneId: bid.params.zoneid || '',
+          floor: bid.params.floor || 0.0,
+          sizes: bid.sizes || [],
+          schain: bid.schain || {}
         }],
-        referer: bidderRequest.refererInfo && bidderRequest.refererInfo.referer,
+        referer: (bidderRequest.refererInfo && bidderRequest.refererInfo.referer) ? bidderRequest.refererInfo.referer : null,
         tmax: bidderRequest.timeout,
-        gdpr: bidderRequest.gdprConsent && bidderRequest.gdprConsent.gdprApplies ? 1 : 0,
-        consent: bidderRequest.gdprConsent && bidderRequest.gdprConsent.consentString,
+        gdpr: (bidderRequest.gdprConsent && bidderRequest.gdprConsent.gdprApplies) ? 1 : 0,
+        consent: (bidderRequest.gdprConsent && bidderRequest.gdprConsent.consentString) ? bidderRequest.gdprConsent.consentString : null,
         uspConsent: bidderRequest.uspConsent
       };
       return {
@@ -60,5 +60,5 @@ export const spec = {
     });
     return bidResponses;
   }
-}
+};
 registerBidder(spec);

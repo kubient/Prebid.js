@@ -2,11 +2,11 @@
 ​
 **Module Name**: Kubient Bidder Adapter
 **Module Type**: Bidder Adapter
-**Maintainer**:  on@fidelity-media.com
+**Maintainer**:  artem.aleksashkin@kubient.com
 ​
 # Description
 ​
-Connects to Fidelity Media fmxSSP demand source to fetch bids.  
+Connects to Kubient KSSP demand source to fetch bids.  
 ​
 # Test Parameters
 ```
