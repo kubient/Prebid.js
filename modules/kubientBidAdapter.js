@@ -1,10 +1,12 @@
 import {registerBidder} from '../src/adapters/bidderFactory.js';
+import {BANNER, NATIVE, VIDEO} from '../src/mediaTypes.js';
 
 const BIDDER_CODE = 'kubient';
 const END_POINT = 'https://kssp.kbntx.ch/hbjs';
 const VERSION = '1.0';
 export const spec = {
   code: BIDDER_CODE,
+  supportedMediaTypes: [BANNER, VIDEO, NATIVE],
   isBidRequestValid: function (bid) {
     return !!(bid && bid.params);
   },
@@ -12,17 +14,18 @@ export const spec = {
     if (!validBidRequests || !bidderRequest) {
       return;
     }
-    return validBidRequests.map(function (bid) {
+    var result = validBidRequests.map(function (bid) {
       let data = {
         v: VERSION,
         requestId: bid.bidderRequestId,
+        invId: bid.params.invid,
         adSlots: [{
           bidId: bid.bidId,
-          invId: bid.params.invid,
           zoneId: bid.params.zoneid || '',
           floor: bid.params.floor || 0.0,
           sizes: bid.sizes || [],
-          schain: bid.schain || {}
+          schain: bid.schain || {},
+          mediaTypes: bid.mediaTypes
         }],
         referer: (bidderRequest.refererInfo && bidderRequest.refererInfo.referer) ? bidderRequest.refererInfo.referer : null,
         tmax: bidderRequest.timeout,
@@ -36,6 +39,7 @@ export const spec = {
         data: JSON.stringify(data)
       };
     });
+    return result;
   },
   interpretResponse: function interpretResponse(serverResponse, request) {
     if (!serverResponse || !serverResponse.body || !serverResponse.body.seatbid) {

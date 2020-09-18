@@ -73,9 +73,10 @@ describe('KubientAdapter', function () {
       it('Returns valid data if array of bids is valid', function () {
         let data = JSON.parse(serverRequest.data);
         expect(data).to.be.an('object');
-        expect(data).to.have.all.keys('v', 'requestId', 'adSlots', 'gdpr', 'referer', 'tmax', 'consent', 'uspConsent');
+        expect(data).to.have.all.keys('v', 'requestId', 'invId', 'adSlots', 'gdpr', 'referer', 'tmax', 'consent', 'uspConsent');
         expect(data.v).to.exist.and.to.be.a('string');
         expect(data.requestId).to.exist.and.to.be.a('string');
+        expect(data.invId).to.be.a('string');
         expect(data.referer).to.be.a('string');
         expect(data.tmax).to.exist.and.to.be.a('number');
         expect(data.gdpr).to.exist.and.to.be.within(0, 1);
@@ -83,13 +84,13 @@ describe('KubientAdapter', function () {
         expect(data.uspConsent).to.exist.and.to.equal(uspConsentData);
         for (let j = 0; j < data['adSlots'].length; j++) {
           let adSlot = data['adSlots'][i];
-          expect(adSlot).to.have.all.keys('bidId', 'invId', 'zoneId', 'floor', 'sizes', 'schain');
+          expect(adSlot).to.have.all.keys('bidId', 'zoneId', 'floor', 'sizes', 'schain', 'mediaTypes');
           expect(adSlot.bidId).to.be.a('string');
-          expect(adSlot.invId).to.be.a('string');
           expect(adSlot.zoneId).to.be.a('string');
           expect(adSlot.floor).to.be.a('number');
           expect(adSlot.sizes).to.be.an('array');
           expect(adSlot.schain).to.be.an('object');
+          expect(adSlot.mediaTypes).to.be.an('object');
         }
       });
     }
