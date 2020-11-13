@@ -18,7 +18,6 @@ export const spec = {
       let data = {
         v: VERSION,
         requestId: bid.bidderRequestId,
-        invId: bid.params.invid,
         adSlots: [{
           bidId: bid.bidId,
           zoneId: bid.params.zoneid || '',
@@ -63,6 +62,28 @@ export const spec = {
       });
     });
     return bidResponses;
+  },
+  getUserSyncs: function(syncOptions, serverResponses, gdprConsent, uspConsent) {
+    var syncs = [];
+    var gdprParams;
+    if (typeof gdprConsent.gdprApplies === 'boolean') {
+      gdprParams = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
+    } else {
+      gdprParams = `gdpr_consent=${gdprConsent.consentString}`;
+    }
+    if (syncOptions.iframeEnabled) {
+      syncs.push({
+        type: 'iframe',
+        url: 'https://kdmp.kbntx.ch/init.html?' + gdprParams
+      });
+    }
+    if (syncOptions.pixelEnabled) {
+      syncs.push({
+        type: 'image',
+        url: 'https://kdmp.kbntx.ch/init.png?' + gdprParams
+      });
+    }
+    return syncs;
   }
 };
 registerBidder(spec);

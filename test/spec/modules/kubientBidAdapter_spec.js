@@ -7,7 +7,6 @@ describe('KubientAdapter', function () {
     bidder: 'kubient',
     bidderRequestId: '145e1d6a7837c9',
     params: {
-      invid: '1234',
       zoneid: '5678',
       floor: 0.05,
     },
@@ -73,10 +72,9 @@ describe('KubientAdapter', function () {
       it('Returns valid data if array of bids is valid', function () {
         let data = JSON.parse(serverRequest.data);
         expect(data).to.be.an('object');
-        expect(data).to.have.all.keys('v', 'requestId', 'invId', 'adSlots', 'gdpr', 'referer', 'tmax', 'consent', 'uspConsent');
+        expect(data).to.have.all.keys('v', 'requestId', 'adSlots', 'gdpr', 'referer', 'tmax', 'consent', 'uspConsent');
         expect(data.v).to.exist.and.to.be.a('string');
         expect(data.requestId).to.exist.and.to.be.a('string');
-        expect(data.invId).to.be.a('string');
         expect(data.referer).to.be.a('string');
         expect(data.tmax).to.exist.and.to.be.a('number');
         expect(data.gdpr).to.exist.and.to.be.within(0, 1);
@@ -101,7 +99,6 @@ describe('KubientAdapter', function () {
       expect(spec.isBidRequestValid(bid)).to.be.true;
     });
     it('Should return false when required params are not found', function () {
-      delete bid.params.invid;
       expect(spec.isBidRequestValid(bid)).to.be.true;
     });
     it('Should return false when params are not found', function () {
@@ -154,4 +151,65 @@ describe('KubientAdapter', function () {
       expect(ads).to.be.an('array').and.to.have.length(0);
     });
   });
+
+  describe('getUserSyncs', function () {
+    it('should register the sync iframe without gdpr', function () {
+      let syncOptions = {
+        iframeEnabled: true
+      };
+      let serverResponses = null;
+      let gdprConsent = {
+        consentString: consentString
+      };
+      let uspConsent = null;
+      let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
+      expect(syncs).to.be.an('array').and.to.have.length(1);
+      expect(syncs[0].type).to.equal('iframe');
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.html?gdpr_consent=' + consentString);
+    });
+    it('should register the sync iframe with gdpr', function () {
+      let syncOptions = {
+        iframeEnabled: true
+      };
+      let serverResponses = null;
+      let gdprConsent = {
+        gdprApplies: true,
+        consentString: consentString
+      };
+      let uspConsent = null;
+      let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
+      expect(syncs).to.be.an('array').and.to.have.length(1);
+      expect(syncs[0].type).to.equal('iframe');
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.html?gdpr=1&gdpr_consent=' + consentString);
+    });
+    it('should register the sync image without gdpr', function () {
+      let syncOptions = {
+        pixelEnabled: true
+      };
+      let serverResponses = null;
+      let gdprConsent = {
+        consentString: consentString
+      };
+      let uspConsent = null;
+      let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
+      expect(syncs).to.be.an('array').and.to.have.length(1);
+      expect(syncs[0].type).to.equal('image');
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.png?gdpr_consent=' + consentString);
+    });
+    it('should register the sync image with gdpr', function () {
+      let syncOptions = {
+        pixelEnabled: true
+      };
+      let serverResponses = null;
+      let gdprConsent = {
+        gdprApplies: true,
+        consentString: consentString
+      };
+      let uspConsent = null;
+      let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
+      expect(syncs).to.be.an('array').and.to.have.length(1);
+      expect(syncs[0].type).to.equal('image');
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.png?gdpr=1&gdpr_consent=' + consentString);
+    });
+  })
 });
