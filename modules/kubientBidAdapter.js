@@ -2,7 +2,7 @@ import {registerBidder} from '../src/adapters/bidderFactory.js';
 import {BANNER, NATIVE, VIDEO} from '../src/mediaTypes.js';
 
 const BIDDER_CODE = 'kubient';
-const END_POINT = 'https://kssp.kbntx.ch/hbjs';
+const END_POINT = 'https://kssp.kbntx.ch/pbjs';
 const VERSION = '1.0';
 export const spec = {
   code: BIDDER_CODE,
