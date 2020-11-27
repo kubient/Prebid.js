@@ -67,12 +67,12 @@ describe('KubientAdapter', function () {
         expect(serverRequest.method).to.equal('POST');
       });
       it('Returns valid URL', function () {
-        expect(serverRequest.url).to.equal('https://kssp.kbntx.ch/hbjs');
+        expect(serverRequest.url).to.equal('https://kssp.kbntx.ch/pbjs');
       });
       it('Returns valid data if array of bids is valid', function () {
         let data = JSON.parse(serverRequest.data);
         expect(data).to.be.an('object');
-        expect(data).to.have.all.keys('v', 'requestId', 'adSlots', 'gdpr', 'referer', 'tmax', 'consent', 'uspConsent');
+        expect(data).to.have.all.keys('v', 'requestId', 'adSlots', 'gdpr', 'referer', 'tmax', 'consent', 'consentGiven', 'uspConsent');
         expect(data.v).to.exist.and.to.be.a('string');
         expect(data.requestId).to.exist.and.to.be.a('string');
         expect(data.referer).to.be.a('string');
@@ -165,7 +165,7 @@ describe('KubientAdapter', function () {
       let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
       expect(syncs).to.be.an('array').and.to.have.length(1);
       expect(syncs[0].type).to.equal('iframe');
-      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.html?gdpr_consent=' + consentString);
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.html?consent_str=' + consentString + '&consent_given=0');
     });
     it('should register the sync iframe with gdpr', function () {
       let syncOptions = {
@@ -180,7 +180,28 @@ describe('KubientAdapter', function () {
       let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
       expect(syncs).to.be.an('array').and.to.have.length(1);
       expect(syncs[0].type).to.equal('iframe');
-      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.html?gdpr=1&gdpr_consent=' + consentString);
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.html?consent_str=' + consentString + '&gdpr=1&consent_given=0');
+    });
+    it('should register the sync iframe with gdpr vendor', function () {
+      let syncOptions = {
+        iframeEnabled: true
+      };
+      let serverResponses = null;
+      let gdprConsent = {
+        gdprApplies: true,
+        consentString: consentString,
+        apiVersion: 1,
+        vendorData: {
+          vendorConsents: {
+            408: 1
+          }
+        }
+      };
+      let uspConsent = null;
+      let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
+      expect(syncs).to.be.an('array').and.to.have.length(1);
+      expect(syncs[0].type).to.equal('iframe');
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.html?consent_str=' + consentString + '&gdpr=1&consent_given=1');
     });
     it('should register the sync image without gdpr', function () {
       let syncOptions = {
@@ -194,7 +215,7 @@ describe('KubientAdapter', function () {
       let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
       expect(syncs).to.be.an('array').and.to.have.length(1);
       expect(syncs[0].type).to.equal('image');
-      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.png?gdpr_consent=' + consentString);
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.png?consent_str=' + consentString + '&consent_given=0');
     });
     it('should register the sync image with gdpr', function () {
       let syncOptions = {
@@ -209,7 +230,30 @@ describe('KubientAdapter', function () {
       let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
       expect(syncs).to.be.an('array').and.to.have.length(1);
       expect(syncs[0].type).to.equal('image');
-      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.png?gdpr=1&gdpr_consent=' + consentString);
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.png?consent_str=' + consentString + '&gdpr=1&consent_given=0');
+    });
+    it('should register the sync image with gdpr vendor', function () {
+      let syncOptions = {
+        pixelEnabled: true
+      };
+      let serverResponses = null;
+      let gdprConsent = {
+        gdprApplies: true,
+        consentString: consentString,
+        apiVersion: 2,
+        vendorData: {
+          vendor: {
+            consents: {
+              408: 1
+            }
+          }
+        }
+      };
+      let uspConsent = null;
+      let syncs = spec.getUserSyncs(syncOptions, serverResponses, gdprConsent, uspConsent);
+      expect(syncs).to.be.an('array').and.to.have.length(1);
+      expect(syncs[0].type).to.equal('image');
+      expect(syncs[0].url).to.equal('https://kdmp.kbntx.ch/init.png?consent_str=' + consentString + '&gdpr=1&consent_given=1');
     });
   })
 });

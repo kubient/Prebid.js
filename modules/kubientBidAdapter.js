@@ -4,8 +4,10 @@ import {BANNER, NATIVE, VIDEO} from '../src/mediaTypes.js';
 const BIDDER_CODE = 'kubient';
 const END_POINT = 'https://kssp.kbntx.ch/pbjs';
 const VERSION = '1.0';
+const VENDOR_ID = 408;
 export const spec = {
   code: BIDDER_CODE,
+  gvlid: VENDOR_ID,
   supportedMediaTypes: [BANNER, VIDEO, NATIVE],
   isBidRequestValid: function (bid) {
     return !!(bid && bid.params);
@@ -30,6 +32,7 @@ export const spec = {
         tmax: bidderRequest.timeout,
         gdpr: (bidderRequest.gdprConsent && bidderRequest.gdprConsent.gdprApplies) ? 1 : 0,
         consent: (bidderRequest.gdprConsent && bidderRequest.gdprConsent.consentString) ? bidderRequest.gdprConsent.consentString : null,
+        consentGiven: kubientGetConsentGiven(bidderRequest.gdprConsent),
         uspConsent: bidderRequest.uspConsent
       };
       return {
@@ -65,12 +68,13 @@ export const spec = {
   },
   getUserSyncs: function(syncOptions, serverResponses, gdprConsent, uspConsent) {
     var syncs = [];
-    var gdprParams = "";
+    var gdprParams = '';
     if (gdprConsent && typeof gdprConsent.consentString === 'string') {
       gdprParams = `?consent_str=${gdprConsent.consentString}`;
       if (typeof gdprConsent.gdprApplies === 'boolean') {
         gdprParams = gdprParams + `&gdpr=${Number(gdprConsent.gdprApplies)}`;
       }
+      gdprParams = gdprParams + `&consent_given=` + kubientGetConsentGiven(gdprConsent);
     }
     if (syncOptions.iframeEnabled) {
       syncs.push({
@@ -87,4 +91,25 @@ export const spec = {
     return syncs;
   }
 };
+
+function kubientGetConsentGiven(gdprConsent) {
+  let consentGiven = 0;
+  if (
+    gdprConsent.apiVersion === 1 &&
+    gdprConsent.vendorData &&
+    gdprConsent.vendorData.vendorConsents &&
+    typeof gdprConsent.vendorData.vendorConsents[VENDOR_ID.toString(10)] !== 'undefined'
+  ) {
+    consentGiven = gdprConsent.vendorData.vendorConsents[VENDOR_ID.toString(10)] ? 1 : 0;
+  } else if (
+    gdprConsent.apiVersion === 2 &&
+    gdprConsent.vendorData &&
+    gdprConsent.vendorData.vendor &&
+    gdprConsent.vendorData.vendor.consents &&
+    typeof gdprConsent.vendorData.vendor.consents[VENDOR_ID.toString(10)] !== 'undefined'
+  ) {
+    consentGiven = gdprConsent.vendorData.vendor.consents[VENDOR_ID.toString(10)] ? 1 : 0;
+  }
+  return consentGiven;
+}
 registerBidder(spec);
