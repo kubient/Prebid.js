@@ -4,7 +4,7 @@ import {BANNER, NATIVE, VIDEO} from '../src/mediaTypes.js';
 const BIDDER_CODE = 'kubient';
 const END_POINT = 'https://kssp.kbntx.ch/pbjs';
 const VERSION = '1.0';
-const VENDOR_ID = 408;
+const VENDOR_ID = 794;
 export const spec = {
   code: BIDDER_CODE,
   gvlid: VENDOR_ID,
