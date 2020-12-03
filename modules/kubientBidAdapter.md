@@ -10,19 +10,18 @@ Connects to Kubient KSSP demand source to fetch bids.
 ​
 # Test Parameters
 ```
-    var adUnits = [{
-      code: 'banner-ad-div',
-      mediaTypes: {
+var adUnits = [{
+    code: 'banner-ad-div',
+    mediaTypes: {
         banner: {
-          sizes: [[300, 250],[640, 480]],
+          sizes: [[300, 250],[728, 90]],
         }
-      },
-      bids: [{
-        bidder: 'kubient',
-        params: {
-          invid: '1234',
-          zoneid: '5678',
-          floor: 0.005
-        }
-      }]
-    }];
+    },
+    bids: [{
+        "bidder": "kubient",
+        "params": {
+            "zoneid": "5fbb948f1e22b"
+        }   
+    }]      
+}];
+```
