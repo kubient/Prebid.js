@@ -1,5 +1,5 @@
 import {registerBidder} from '../src/adapters/bidderFactory.js';
-import {BANNER, NATIVE, VIDEO} from '../src/mediaTypes.js';
+import {BANNER} from '../src/mediaTypes.js';
 
 const BIDDER_CODE = 'kubient';
 const END_POINT = 'https://kssp.kbntx.ch/pbjs';
@@ -8,7 +8,7 @@ const VENDOR_ID = 794;
 export const spec = {
   code: BIDDER_CODE,
   gvlid: VENDOR_ID,
-  supportedMediaTypes: [BANNER, VIDEO, NATIVE],
+  supportedMediaTypes: [BANNER],
   isBidRequestValid: function (bid) {
     return !!(bid && bid.params);
   },
