@@ -193,7 +193,7 @@ describe('KubientAdapter', function () {
         apiVersion: 1,
         vendorData: {
           vendorConsents: {
-            408: 1
+            794: 1
           }
         }
       };
@@ -244,7 +244,7 @@ describe('KubientAdapter', function () {
         vendorData: {
           vendor: {
             consents: {
-              408: 1
+              794: 1
             }
           }
         }
